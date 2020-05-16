@@ -12,6 +12,7 @@
     "react-dom": "^16.13.1",
     "react-dropzone": "^11.0.1",
     "react-image-crop": "^8.6.2",
+    "react-notifications": "^1.6.0",
     "react-scripts": "3.4.1"
   },
   "scripts": {

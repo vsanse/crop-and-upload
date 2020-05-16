@@ -1,6 +1,12 @@
 {
-    "ALLOW_MULTIPLE": true,
+    "ALLOW_MULTIPLE": false,
     "APPLY_SIZE_CONSTRAINT": true,
-    "ALLOWED_WIDTH": 200,
-    "ALLOWED_HEIGHT": 200
+    "ALLOWED_WIDTH": 1024,
+    "ALLOWED_HEIGHT": 1024,
+    "CROP_PREVIEW": {
+        "HORIZONTAL": [755, 450],
+        "VERTICAL": [365, 450],
+        "HORIZONTAL_SMALL": [365, 212],
+        "GALLARY": [380, 380]
+    }
 }
