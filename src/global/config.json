@@ -1,0 +1,6 @@
+{
+    "ALLOW_MULTIPLE": true,
+    "APPLY_SIZE_CONSTRAINT": true,
+    "ALLOWED_WIDTH": 200,
+    "ALLOWED_HEIGHT": 200
+}
