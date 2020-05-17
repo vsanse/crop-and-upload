@@ -1,30 +1,31 @@
 import React, { useState, useEffect } from "react";
 import * as config from "../../global/config.json";
 import "./preview.scss";
-
+import Modal from "../modal";
+import Edit from "../edit";
+import Button from "../button";
 export default function Preview(props) {
-    const PREVIEWS = Object.keys(config.CROP_PREVIEW);
+    const [previews, setPreviews] = useState(config.CROP_PREVIEW);
     const [previewUrl, setPreviewUrl] = useState([]);
+    const [isBackdropVisible, setIsBackdropVisible] = useState(false);
+    const [currentId, setCurrentId] = useState(-1);
 
     useEffect(() => {
         let promiseArr = [];
-        for (const preview of PREVIEWS) {
+        for (const preview of Object.keys(previews)) {
             promiseArr.push(
-                createCropPreview(
-                    {
-                        x: 0,
-                        y: 0,
-                        width: config.CROP_PREVIEW[preview][0],
-                        height: config.CROP_PREVIEW[preview][1],
-                    },
-                    `${preview}.jpeg`
-                )
+                createCropPreview(previews[preview], `${preview}.jpeg`)
             );
         }
         Promise.all(promiseArr).then((values) => {
             setPreviewUrl(values);
         });
-    }, [props.image]);
+    }, [props.image, previews]);
+
+    const onCancel = function () {
+        setIsBackdropVisible(!isBackdropVisible);
+        document.querySelector("body").classList.toggle("modal-open");
+    };
 
     const createCropPreview = async (crop, fileName) => {
         if (props.image) {
@@ -59,28 +60,58 @@ export default function Preview(props) {
             });
         }
     };
+
+    const editPreview = (idx) => {
+        onCancel();
+        setCurrentId(idx);
+    };
+
+    const saveEditedPreview = (crop, id) => {
+        onCancel();
+        let existingPreviews = { ...previews };
+        existingPreviews[id] = crop;
+        setPreviews(existingPreviews);
+    };
+
     return (
         <div className={`gallery ${props.image ? "active" : ""}`}>
             <div className="header">
                 <p>Preview</p>
-                <button>Upload All</button>
+                <Button>Upload All</Button>
             </div>
             <div className="img-container">
-                {previewUrl.map((url, idx) =>
-                    url ? (
+                {previewUrl.map((url, idx) => {
+                    let PREVIEW = Object.keys(previews)[idx];
+                    return url ? (
                         <div className="img" key={idx}>
                             <img alt="crop preview" src={url} />
                             <p>
-                                {PREVIEWS[idx]}:{" "}
-                                {config.CROP_PREVIEW[PREVIEWS[idx]][0]} x{" "}
-                                {config.CROP_PREVIEW[PREVIEWS[idx]][1]}
+                                {PREVIEW}: {previews[PREVIEW].width} x{" "}
+                                {previews[PREVIEW].height}
                             </p>
+                            <Button
+                                className="primary-btn"
+                                onClick={() =>
+                                    editPreview(Object.keys(previews)[idx])
+                                }
+                            >
+                                Edit
+                            </Button>
                         </div>
                     ) : (
                         ""
-                    )
-                )}
+                    );
+                })}
             </div>
+            {isBackdropVisible && (
+                <Modal onCancel={onCancel} visible={isBackdropVisible}>
+                    <Edit
+                        originalImage={props.originalImage}
+                        currentId={currentId}
+                        onSave={saveEditedPreview}
+                    />
+                </Modal>
+            )}
         </div>
     );
 }

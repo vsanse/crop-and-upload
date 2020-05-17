@@ -75,7 +75,7 @@ export default function Uploader() {
                 )}
             </Dropzone>
             {elRefs.map((image, idx) => (
-                <Preview key={idx} image={image.current} />
+                <Preview key={idx} image={image.current} originalImage = {galleryImages[idx]}  />
             ))}
         </div>
     );

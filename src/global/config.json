@@ -4,9 +4,33 @@
     "ALLOWED_WIDTH": 1024,
     "ALLOWED_HEIGHT": 1024,
     "CROP_PREVIEW": {
-        "HORIZONTAL": [755, 450],
-        "VERTICAL": [365, 450],
-        "HORIZONTAL_SMALL": [365, 212],
-        "GALLARY": [380, 380]
+        "HORIZONTAL": {
+            "width": 755, 
+            "height": 450, 
+            "x": 0, 
+            "y": 0,
+            "unit": "px"
+        },
+        "VERTICAL": {
+            "width": 365, 
+            "height": 450, 
+            "x": 0, 
+            "y": 0,
+            "unit": "px"
+        },
+        "HORIZONTAL_SMALL": {
+            "width": 365, 
+            "height": 212, 
+            "x": 0, 
+            "y": 0,
+            "unit": "px"
+        },
+        "GALLARY": {
+            "width": 380, 
+            "height": 380, 
+            "x": 0, 
+            "y": 0,
+            "unit": "px"
+        }
     }
 }
