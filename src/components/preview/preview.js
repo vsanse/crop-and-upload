@@ -112,7 +112,6 @@ export default function Preview(props) {
             }
         }
         const {requests} =images.reduce(createUploadRequest,{requests:[],config})
-        console.log(requests);
         axios.all(requests).then(()=>{
             setUploadPercentage(100);
             NotificationManager.success('Uploading images done.')
