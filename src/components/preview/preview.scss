@@ -8,6 +8,25 @@
     margin-top: 1rem;
     border-radius: 0.25rem;
 
+    progress[value] {
+        height: 1.5rem;
+        -webkit-appearance: none;
+        appearance: none;
+        width: 95%;
+
+        align-self: center;
+
+        &::-webkit-progress-bar {
+            border-radius: 0.625rem;
+            background-color: transparent;
+            border: 1px solid lightgray;
+        }
+
+        &::-webkit-progress-value {
+            border-radius: 10px;
+        }
+    }
+
     &.active {
         display: flex;
     }
@@ -34,11 +53,12 @@
         justify-content: space-between;
         padding: 0 0.5rem;
     }
-    .editPage{
+
+    .editPage {
         height: 1024px;
         width: 1024px;
         position: absolute;
         z-index: 999;
-        background-color: rgba(0,0,0,0.5);
+        background-color: rgba(0, 0, 0, 0.5);
     }
 }
