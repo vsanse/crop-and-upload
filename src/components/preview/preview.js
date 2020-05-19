@@ -93,8 +93,7 @@ export default function Preview(props) {
         setPreviews(existingPreviews);
     };
     const createUploadRequest =(requestsAndConfig, image)=>{
-        let url= `${process.env.REACT_APP_CLOUDINARY_ENDPOINT}/${process.env.REACT_APP_CLOUDINARY_VERSION}/${process.env.REACT_APP_CLOUD}/
-        ${process.env.REACT_APP_CLOUD_UPLOAD_TYPE}/${process.env.REACT_APP_ACTION}`
+        let url= `${process.env.REACT_APP_CLOUDINARY_ENDPOINT}/${process.env.REACT_APP_CLOUDINARY_VERSION}/${process.env.REACT_APP_CLOUD}/${process.env.REACT_APP_CLOUD_UPLOAD_TYPE}/${process.env.REACT_APP_ACTION}`
         let {requests, config} = requestsAndConfig;
         image.lastModifiedDate=new Date();
         let formData=new FormData();
