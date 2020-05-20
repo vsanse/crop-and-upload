@@ -1,149 +1,189 @@
-import React,{useState,useEffect} from "react";
+import React, { useState, useEffect } from "react";
 import * as config from "../../global/config.json";
 import "./preview.scss";
 import Modal from "../modal";
 import Edit from "../edit";
 import Button from "../button";
 import axios from "axios";
-import {NotificationManager} from 'react-notifications';
+import { NotificationManager } from "react-notifications";
 export default function Preview(props) {
-    const [previews,setPreviews]=useState(config.CROP_PREVIEW);
-    const [previewUrl,setPreviewUrl]=useState([]);
-    const [isBackdropVisible,setIsBackdropVisible]=useState(false);
-    const [currentId,setCurrentId]=useState(-1);
-    const [images,setImages]=useState([]);
-    const [uploadPercentage,setUploadPercentage]=useState(0);
+    const [previews, setPreviews] = useState(config.CROP_PREVIEW);
+    const [previewUrl, setPreviewUrl] = useState([]);
+    const [isBackdropVisible, setIsBackdropVisible] = useState(false);
+    const [currentId, setCurrentId] = useState(-1);
+    const [images, setImages] = useState([]);
+    const [uploadPercentage, setUploadPercentage] = useState(0);
     const [isUploading, setIsUploading] = useState(false);
-
+    const [uploadsUrl, setUploadsUrl] = useState({});
     useEffect(() => {
-        let promiseArr=[];
-        for(const preview of Object.keys(previews)) {
+        let promiseArr = [];
+        for (const preview of Object.keys(previews)) {
             promiseArr.push(
-                createCropPreview(previews[preview],`${preview}.jpeg`)
+                createCropPreview(previews[preview], `${preview}.jpeg`)
             );
         }
         Promise.all(promiseArr).then((values) => {
-            let previewData = { urls:[],blobs:[]};
+            let previewData = { urls: [], blobs: [] };
             values.reduce(populatePreviewData, previewData);
             setImages(previewData.blobs);
             setPreviewUrl(previewData.urls);
         });
-    },[props.image,previews]);
+    }, [props.image, previews]);
 
-    const populatePreviewData = (previewData,value)=>{
-        if(value){
+    const populatePreviewData = (previewData, value) => {
+        if (value) {
             previewData.urls.push(value.url);
             previewData.blobs.push(value.blob);
         }
         return previewData;
-    }
+    };
 
-    const onCancel=function() {
+    const onCancel = function () {
         setIsBackdropVisible(!isBackdropVisible);
         document.querySelector("body").classList.toggle("modal-open");
     };
 
-    const createCropPreview=async (crop,fileName) => {
-        if(props.image) {
-            const canvas=document.createElement("canvas");
-            const scaleX=props.image.naturalWidth/props.image.width;
-            const scaleY=props.image.naturalHeight/props.image.height;
-            canvas.width=crop.width;
-            canvas.height=crop.height;
-            const ctx=canvas.getContext("2d");
+    const createCropPreview = async (crop, fileName) => {
+        if (props.image) {
+            const canvas = document.createElement("canvas");
+            const scaleX = props.image.naturalWidth / props.image.width;
+            const scaleY = props.image.naturalHeight / props.image.height;
+            canvas.width = crop.width;
+            canvas.height = crop.height;
+            const ctx = canvas.getContext("2d");
 
             ctx.drawImage(
                 props.image,
-                crop.x*scaleX,
-                crop.y*scaleY,
-                crop.width*scaleX,
-                crop.height*scaleY,
+                crop.x * scaleX,
+                crop.y * scaleY,
+                crop.width * scaleX,
+                crop.height * scaleY,
                 0,
                 0,
                 crop.width,
                 crop.height
             );
 
-            return new Promise((resolve,reject) => {
+            return new Promise((resolve, reject) => {
                 canvas.toBlob((blob) => {
-                    if(!blob) {
+                    if (!blob) {
                         reject(new Error("Canvas is empty"));
                         return;
                     }
 
-                    blob.name=fileName;
+                    blob.name = fileName;
                     resolve({
                         blob: blob,
-                        url: window.URL.createObjectURL(blob)
+                        url: window.URL.createObjectURL(blob),
                     });
-                },"image/jpeg");
+                }, "image/jpeg");
             });
         }
     };
 
-    const editPreview=(idx) => {
+    const editPreview = (idx) => {
         onCancel();
         setCurrentId(idx);
     };
 
-    const saveEditedPreview=(crop,id) => {
+    const saveEditedPreview = (crop, id) => {
         onCancel();
-        let existingPreviews={...previews};
-        existingPreviews[id]=crop;
+        let existingPreviews = { ...previews };
+        existingPreviews[id] = crop;
         setPreviews(existingPreviews);
     };
-    const createUploadRequest =(requestsAndConfig, image)=>{
-        let url= `${process.env.REACT_APP_CLOUDINARY_ENDPOINT}/${process.env.REACT_APP_CLOUDINARY_VERSION}/${process.env.REACT_APP_CLOUD}/${process.env.REACT_APP_CLOUD_UPLOAD_TYPE}/${process.env.REACT_APP_ACTION}`
-        let {requests, config} = requestsAndConfig;
-        image.lastModifiedDate=new Date();
-        let formData=new FormData();
-        formData.append("api_key",process.env.REACT_APP_CLOUD_API);
-        formData.append("file",image);
-        formData.append("upload_preset",`${process.env.REACT_APP_CLOUD_UPLOAD_PRESET}`);
-        requests.push(axios.post(url,formData,config ));
+    const createUploadRequest = (requestsAndConfig, image) => {
+        let [name] = image.name.split(".");
+        let url = `${process.env.REACT_APP_CLOUDINARY_ENDPOINT}/${process.env.REACT_APP_CLOUDINARY_VERSION}/${process.env.REACT_APP_CLOUD}/${process.env.REACT_APP_CLOUD_UPLOAD_TYPE}/${process.env.REACT_APP_ACTION}`;
+        let { requests, config } = requestsAndConfig;
+        image.lastModifiedDate = new Date();
+        let formData = new FormData();
+        formData.append("api_key", process.env.REACT_APP_CLOUD_API);
+        formData.append("file", image);
+        formData.append("tags", name);
+        formData.append(
+            "upload_preset",
+            `${process.env.REACT_APP_CLOUD_UPLOAD_PRESET}`
+        );
+        requests.push(axios.post(url, formData, config));
         return requestsAndConfig;
-    }
-    const uploadToCloud=() => {
+    };
+    const uploadToCloud = () => {
         setIsUploading(true);
         let config = {
-            onUploadProgress: (progressEvent)=>{
+            onUploadProgress: (progressEvent) => {
                 setUploadPercentage(50);
-            }
-        }
-        const {requests} =images.reduce(createUploadRequest,{requests:[],config})
-        axios.all(requests).then(()=>{
-            setUploadPercentage(100);
-            NotificationManager.success('Uploading images done.')
-            setTimeout(()=>{
-                setIsUploading(false);
-            }, 1000)
-        }).catch((err)=>{
-            NotificationManager.error('Uploading images failed.');
-            setTimeout(()=>{
-                setIsUploading(false);
-            }, 1000)
-        })
-       
-    }
+            },
+        };
+        const { requests } = images.reduce(createUploadRequest, {
+            requests: [],
+            config,
+        });
+
+        const getUploadUrls = (totalUploadsUrl, response) => {
+            let [name] = response.data.tags;
+            totalUploadsUrl[name] = response.data.secure_url;
+            return totalUploadsUrl;
+        };
+        axios
+            .all(requests)
+            .then(
+                axios.spread((...responses) => {
+                    let totalUploadsUrl = {};
+                    responses.reduce(getUploadUrls, totalUploadsUrl);
+                    setUploadsUrl(totalUploadsUrl);
+                    setUploadPercentage(100);
+                    NotificationManager.success("Uploading images done.");
+                    setTimeout(() => {
+                        setIsUploading(false);
+                    }, 1000);
+                })
+            )
+            .catch((err) => {
+                NotificationManager.error("Uploading images failed.");
+                setTimeout(() => {
+                    setIsUploading(false);
+                }, 1000);
+            });
+    };
 
     return (
-        <div className={`gallery ${props.image? "active":""}`}>
+        <div className={`gallery ${props.image ? "active" : ""}`}>
             <div className="header">
                 <p>Preview</p>
                 <Button onClick={uploadToCloud}>Upload All</Button>
             </div>
-
-            { isUploading &&( <progress id = 'upload-progress' value={uploadPercentage} max="100"> `${uploadPercentage}%` </progress>)}
+            {isUploading && (
+                <progress
+                    id="upload-progress"
+                    value={uploadPercentage}
+                    max="100"
+                >
+                    {" "}
+                    `${uploadPercentage}%`{" "}
+                </progress>
+            )}
             <div className="img-container">
-                {previewUrl.map((url,idx) => {
-                    let PREVIEW=Object.keys(previews)[idx];
-                    return url? (
+                {previewUrl.map((url, idx) => {
+                    let PREVIEW = Object.keys(previews)[idx];
+                    return url ? (
                         <div className="img" key={idx}>
                             <img alt="crop preview" src={url} />
                             <p>
                                 {PREVIEW}: {previews[PREVIEW].width} x{" "}
                                 {previews[PREVIEW].height}
                             </p>
+                            {uploadsUrl[PREVIEW] && (
+                                <a
+                                    href={uploadsUrl[PREVIEW]}
+                                    alt=""
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    type="download"
+                                >
+                                    download
+                                </a>
+                            )}
                             <Button
                                 className="primary-btn"
                                 onClick={() =>
@@ -153,12 +193,12 @@ export default function Preview(props) {
                                 Edit
                             </Button>
                         </div>
-                    ):(
-                            ""
-                        );
+                    ) : (
+                        ""
+                    );
                 })}
             </div>
-            {isBackdropVisible&&(
+            {isBackdropVisible && (
                 <Modal onCancel={onCancel} visible={isBackdropVisible}>
                     <Edit
                         originalImage={props.originalImage}

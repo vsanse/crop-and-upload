@@ -26,7 +26,12 @@
             border-radius: 10px;
         }
     }
-
+    .uploadUrls{
+        display: flex;
+        flex-flow: column;
+        margin: 0 auto;
+        flex-wrap: wrap;
+    }
     &.active {
         display: flex;
     }
@@ -45,6 +50,9 @@
         img {
             max-width: 100%;
         }
+    }
+    a{
+        text-decoration: none;
     }
 
     .header {
